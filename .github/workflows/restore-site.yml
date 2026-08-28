@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  restore:
+  audit:
     if: ${{ !contains(github.event.head_commit.message, '[site-restore]') }}
     runs-on: ubuntu-latest
     steps:
@@ -18,103 +18,51 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Repair safe SiteCraft portability issues
+      - name: Audit without rewriting the restored pages
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-
-          internal = (
-              'http://www.wystynez.ru/', 'https://www.wystynez.ru/',
-              'http://wystynez.ru/', 'https://wystynez.ru/'
-          )
-          changed = []
-          for p in Path('.').rglob('*'):
-              if not p.is_file() or p.suffix.lower() not in {'.htm', '.html'}:
-                  continue
-              if p.name == 'index.html':
-                  continue
-              raw = p.read_bytes()
-              try:
-                  if re.search(br'charset\s*=\s*["\']?windows-1251', raw, re.I):
-                      text = raw.decode('cp1251')
-                  else:
-                      text = raw.decode('utf-8')
-              except UnicodeDecodeError:
-                  continue
-
-              new = re.sub(r'charset\s*=\s*["\']?windows-1251["\']?', 'charset=utf-8', text, flags=re.I)
-              for old in internal:
-                  new = new.replace(old, './')
-              if new != text:
-                  p.write_text(new, encoding='utf-8')
-                  changed.append(str(p))
-
-          print(f'Safely repaired {len(changed)} HTML files')
-          for p in changed:
-              print(p)
-          PY
-
-      - name: Build automatic SiteCraft audit
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          from urllib.parse import urlparse
-          import re
-
-          root = Path('.')
-          pages = sorted([p for p in root.rglob('*') if p.is_file() and p.suffix.lower() in {'.htm','.html'}])
-          local_files = {str(p).replace('\\','/') for p in root.rglob('*') if p.is_file()}
-          external = []
-          suspicious = []
-          missing = []
-          menu_terms = ['О нас','Наши услуги','Экспозиция','Мы на карте мира','Архив наших событий','Наши друзья','Природа','Культура','История','Гостям']
-          menu_hits = {x: [] for x in menu_terms}
-
+          root=Path('.')
+          pages=sorted(p for p in root.rglob('*') if p.is_file() and p.suffix.lower() in {'.htm','.html'})
+          files={p.as_posix() for p in root.rglob('*') if p.is_file()}
+          menu=['О нас','Наши услуги','Экспозиция','Мы на карте мира','Архив наших событий','Наши друзья','Природа','Культура','История','Гостям']
+          hits={x:[] for x in menu}; old=[]; missing=[]; mojibake=[]
           for p in pages:
-              try: text = p.read_text(encoding='utf-8')
-              except UnicodeDecodeError: suspicious.append((str(p),'не UTF-8')); continue
-              for term in menu_terms:
-                  if term in text: menu_hits[term].append(str(p))
-              for href in re.findall(r'''(?:href|src)\s*=\s*["']([^"']+)["']''', text, re.I):
-                  if href.startswith(('http://','https://','mailto:','javascript:','#')):
-                      if 'wystynez.ru' in href: external.append((str(p),href))
-                      continue
-                  target = href.split('#',1)[0].split('?',1)[0]
-                  if not target or target.endswith('/') or target.startswith('data:'): continue
-                  target_path = (p.parent / target).as_posix().lstrip('./')
-                  if target_path not in local_files and not target_path.startswith('sc-pro/') and not target_path.startswith('sc-pic/'):
-                      # tolerate URL-encoded and case-sensitive legacy references for manual review
-                      missing.append((str(p),href))
-
-          lines = ['# Автоматический аудит архива SiteCraft','',f'HTML-страниц: **{len(pages)}**','']
-          lines += ['## Общие пункты меню','']
-          for term, files in menu_hits.items():
-              lines.append(f'- **{term}** — {len(files)} страниц')
-          lines += ['', '## Старые абсолютные ссылки', '']
-          lines += [f'- `{p}` → `{u}`' for p,u in external[:200]] or ['- Не обнаружены']
-          lines += ['', '## Подозрительные файлы', '']
-          lines += [f'- `{p}` — {r}' for p,r in suspicious[:200]] or ['- Не обнаружены']
-          lines += ['', '## Возможные отсутствующие локальные ссылки', '']
-          lines += [f'- `{p}` → `{u}`' for p,u in missing[:300]] or ['- Не обнаружены']
-          Path('SITE-AUDIT.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
-          print('\n'.join(lines))
+            raw=p.read_bytes()
+            try: text=raw.decode('utf-8')
+            except UnicodeDecodeError:
+              mojibake.append((p.as_posix(),'не UTF-8')); continue
+            for x in menu:
+              if x in text: hits[x].append(p.as_posix())
+            for u in re.findall(r'''(?:href|src)\s*=\s*["']([^"']+)["']''',text,re.I):
+              if 'wystynez.ru' in u or 'rominten.wystynez.ru' in u: old.append((p.as_posix(),u))
+              if u.startswith(('http://','https://','mailto:','javascript:','#','//')): continue
+              t=u.split('#',1)[0].split('?',1)[0]
+              if not t or t.endswith('/'): continue
+              target=(p.parent/t).as_posix()
+              if target.startswith('./'): target=target[2:]
+              if target not in files: missing.append((p.as_posix(),u))
+            if re.search(r'(?:Рџ|РЎ|Рђ|Рќ|Рћ|Рљ|РІ|Рµ|Р°|Рё|Рё)',text):
+              # only flag pages with the common UTF-8-as-Windows-1251 mojibake signature
+              if 'Р' in text and ('С' in text or 'Ð' in text): mojibake.append((p.as_posix(),'возможная кракозябра'))
+          out=['# Аудит восстановленного SiteCraft-архива','',f'HTML-страниц: **{len(pages)}**','', '## Пункты общего меню']
+          out += [f'- **{x}** — {len(v)} страниц' for x,v in hits.items()]
+          out += ['', '## Старые абсолютные ссылки'] + ([f'- `{p}` → `{u}`' for p,u in old[:300]] or ['- Не обнаружены'])
+          out += ['', '## Проблемы кодировки'] + ([f'- `{p}` — {r}' for p,r in mojibake[:300]] or ['- Не обнаружены'])
+          out += ['', '## Возможные отсутствующие локальные ссылки'] + ([f'- `{p}` → `{u}`' for p,u in missing[:300]] or ['- Не обнаружены'])
+          Path('SITE-AUDIT.md').write_text('\n'.join(out)+'\n',encoding='utf-8')
+          print('\n'.join(out))
           PY
 
       - name: Keep legacy SiteCraft files untouched by Jekyll
         run: touch .nojekyll
 
-      - name: Commit safe repairs and audit
+      - name: Commit audit only
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .
-          if git diff --cached --quiet; then
-            echo 'No changes to commit.'
-          else
-            git commit -m '[site-restore] Audit and portability repairs'
-            git push
-          fi
+          git add .nojekyll SITE-AUDIT.md
+          if git diff --cached --quiet; then echo 'No audit changes.'; else git commit -m '[site-restore] Audit restored SiteCraft archive'; git push; fi
