@@ -1,0 +1,98 @@
+name: Restore SiteCraft site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    if: ${{ !contains(github.event.head_commit.message, '[site-restore]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Restore original homepage from live site
+        shell: bash
+        run: |
+          set -e
+          curl -L --fail --silent --show-error 'https://www.wystynez.ru/' -o index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8', errors='replace')
+          # Make links to the old domain local to this GitHub copy.
+          for old in (
+              'http://www.wystynez.ru/', 'https://www.wystynez.ru/',
+              'http://wystynez.ru/', 'https://wystynez.ru/'
+          ):
+              s = s.replace(old, './')
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Repair HTML encoding and old absolute links
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          bad_chars = set('РСÃÂÐÑÀðõèâåéîíç')
+
+          def score(s):
+              markers = ['Р', 'С', 'Ã', 'Â', 'Ð', 'Ñ', 'Àð', 'ðõ', 'é']
+              return sum(s.count(x) for x in markers)
+
+          for p in Path('.').rglob('*'):
+              if not p.is_file() or p.suffix.lower() not in {'.htm', '.html'}:
+                  continue
+              if str(p) == 'index.html':
+                  continue
+              try:
+                  s = p.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+
+              candidates = [s]
+              try:
+                  candidates.append(s.encode('latin1').decode('cp1251'))
+              except Exception:
+                  pass
+              try:
+                  candidates.append(s.encode('cp1251').decode('utf-8'))
+              except Exception:
+                  pass
+              best = min(candidates, key=score)
+              s = best
+
+              s = re.sub(r'charset\\s*=\\s*["\\']?windows-1251["\\']?', 'charset=utf-8', s, flags=re.I)
+              s = s.replace('http://www.wystynez.ru/', './')
+              s = s.replace('https://www.wystynez.ru/', './')
+              s = s.replace('http://wystynez.ru/', './')
+              s = s.replace('https://wystynez.ru/', './')
+              p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Disable Jekyll processing
+        shell: bash
+        run: touch .nojekyll
+
+      - name: Commit restored site
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .nojekyll '*.htm' '*.html' 2>/dev/null || true
+          git add .
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m '[site-restore] Restore SiteCraft site'
+            git push
+          fi
