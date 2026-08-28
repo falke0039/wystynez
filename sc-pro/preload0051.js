@@ -1,0 +1,4 @@
+function preload_images() {
+preload("b0036", "sc-pic/i0576.png");
+}
+if (window.addEventListener) window.addEventListener("load", preload_images, false); else if (window.attachEvent) window.attachEvent("onload", preload_images); 

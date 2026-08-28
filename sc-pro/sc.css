@@ -1,0 +1,19 @@
+/* Sitecraft v11, www.sitecraft.ru */
+html { margin:0px; padding:0px; border:0px;}
+body { margin:0px; padding:0px; border:0px; font-size:1px;}
+h1, h2, h3 { margin:0px; padding:0px;}
+a {text-decoration: none}
+.clearbar { clear: both; }
+.png32 { }
+.u1 { text-decoration: underline; }
+div { overflow: visible; }
+p { margin:0px; }
+ul { padding: 0px 0px 0px 33px; margin: 0px; }
+tr { vertical-align: top; }
+td { padding: 0px; vertical-align: top; }
+table { padding: 0px; }
+
+.t1{ font: 43px "Arial"; line-height: 49px; color:#000000; }
+.p1{ text-align:center; }
+.t2{ font: 19px "Times New Roman"; line-height: 21px; color:#000000; }
+.p2{ text-align:left; }
