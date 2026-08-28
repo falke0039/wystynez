@@ -25,13 +25,21 @@ jobs:
           curl -L --fail --silent --show-error 'https://www.wystynez.ru/' -o index.html
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('index.html')
-          s = p.read_text(encoding='utf-8', errors='replace')
+          raw = p.read_bytes()
+          # The original SiteCraft page is served in Windows-1251.
+          # Decode bytes correctly before converting the copy to UTF-8.
+          if re.search(br'charset\s*=\s*["\']?windows-1251', raw, re.I):
+              s = raw.decode('cp1251')
+          else:
+              s = raw.decode('utf-8')
           for old in (
               'http://www.wystynez.ru/', 'https://www.wystynez.ru/',
               'http://wystynez.ru/', 'https://wystynez.ru/'
           ):
               s = s.replace(old, './')
+          s = re.sub(r'charset\s*=\s*["\']?windows-1251["\']?', 'charset=utf-8', s, flags=re.I)
           p.write_text(s, encoding='utf-8')
           PY
 
@@ -42,35 +50,30 @@ jobs:
           from pathlib import Path
           import re
 
-          def score(s):
-              markers = ['Р', 'С', 'Ã', 'Â', 'Ð', 'Ñ', 'Àð', 'ðõ', 'é']
-              return sum(s.count(x) for x in markers)
-
           for p in Path('.').rglob('*'):
               if not p.is_file() or p.suffix.lower() not in {'.htm', '.html'}:
                   continue
               if str(p) == 'index.html':
                   continue
+              raw = p.read_bytes()
               try:
-                  s = p.read_text(encoding='utf-8')
+                  # Prefer the encoding explicitly declared by the old page.
+                  if re.search(br'charset\s*=\s*["\']?windows-1251', raw, re.I):
+                      s = raw.decode('cp1251')
+                  else:
+                      s = raw.decode('utf-8')
               except UnicodeDecodeError:
-                  continue
+                  try:
+                      s = raw.decode('cp1251')
+                  except UnicodeDecodeError:
+                      continue
 
-              candidates = [s]
-              try:
-                  candidates.append(s.encode('latin1').decode('cp1251'))
-              except Exception:
-                  pass
-              try:
-                  candidates.append(s.encode('cp1251').decode('utf-8'))
-              except Exception:
-                  pass
-              s = min(candidates, key=score)
-              s = re.sub(r"charset\s*=\s*[\"']?windows-1251[\"']?", 'charset=utf-8', s, flags=re.I)
-              s = s.replace('http://www.wystynez.ru/', './')
-              s = s.replace('https://www.wystynez.ru/', './')
-              s = s.replace('http://wystynez.ru/', './')
-              s = s.replace('https://wystynez.ru/', './')
+              s = re.sub(r'charset\s*=\s*["\']?windows-1251["\']?', 'charset=utf-8', s, flags=re.I)
+              for old in (
+                  'http://www.wystynez.ru/', 'https://www.wystynez.ru/',
+                  'http://wystynez.ru/', 'https://wystynez.ru/'
+              ):
+                  s = s.replace(old, './')
               p.write_text(s, encoding='utf-8')
           PY
 
