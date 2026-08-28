@@ -1,4 +1,4 @@
-name: Restore SiteCraft site
+name: Restore and audit SiteCraft site
 
 on:
   push:
@@ -13,75 +13,100 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[site-restore]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout archive
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Restore original homepage from live site
+      - name: Repair safe SiteCraft portability issues
         shell: bash
         run: |
-          set -e
-          curl -L --fail --silent --show-error 'https://www.wystynez.ru/' -o index.html
           python3 - <<'PY'
           from pathlib import Path
           import re
-          p = Path('index.html')
-          raw = p.read_bytes()
-          # The original SiteCraft page is served in Windows-1251.
-          # Decode bytes correctly before converting the copy to UTF-8.
-          if re.search(br'charset\s*=\s*["\']?windows-1251', raw, re.I):
-              s = raw.decode('cp1251')
-          else:
-              s = raw.decode('utf-8')
-          for old in (
+
+          internal = (
               'http://www.wystynez.ru/', 'https://www.wystynez.ru/',
               'http://wystynez.ru/', 'https://wystynez.ru/'
-          ):
-              s = s.replace(old, './')
-          s = re.sub(r'charset\s*=\s*["\']?windows-1251["\']?', 'charset=utf-8', s, flags=re.I)
-          p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Repair HTML encoding and old absolute links
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
+          )
+          changed = []
           for p in Path('.').rglob('*'):
               if not p.is_file() or p.suffix.lower() not in {'.htm', '.html'}:
                   continue
-              if str(p) == 'index.html':
+              if p.name == 'index.html':
                   continue
               raw = p.read_bytes()
               try:
-                  # Prefer the encoding explicitly declared by the old page.
                   if re.search(br'charset\s*=\s*["\']?windows-1251', raw, re.I):
-                      s = raw.decode('cp1251')
+                      text = raw.decode('cp1251')
                   else:
-                      s = raw.decode('utf-8')
+                      text = raw.decode('utf-8')
               except UnicodeDecodeError:
-                  try:
-                      s = raw.decode('cp1251')
-                  except UnicodeDecodeError:
-                      continue
+                  continue
 
-              s = re.sub(r'charset\s*=\s*["\']?windows-1251["\']?', 'charset=utf-8', s, flags=re.I)
-              for old in (
-                  'http://www.wystynez.ru/', 'https://www.wystynez.ru/',
-                  'http://wystynez.ru/', 'https://wystynez.ru/'
-              ):
-                  s = s.replace(old, './')
-              p.write_text(s, encoding='utf-8')
+              new = re.sub(r'charset\s*=\s*["\']?windows-1251["\']?', 'charset=utf-8', text, flags=re.I)
+              for old in internal:
+                  new = new.replace(old, './')
+              if new != text:
+                  p.write_text(new, encoding='utf-8')
+                  changed.append(str(p))
+
+          print(f'Safely repaired {len(changed)} HTML files')
+          for p in changed:
+              print(p)
           PY
 
-      - name: Disable Jekyll processing
+      - name: Build automatic SiteCraft audit
         shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          import re
+
+          root = Path('.')
+          pages = sorted([p for p in root.rglob('*') if p.is_file() and p.suffix.lower() in {'.htm','.html'}])
+          local_files = {str(p).replace('\\','/') for p in root.rglob('*') if p.is_file()}
+          external = []
+          suspicious = []
+          missing = []
+          menu_terms = ['О нас','Наши услуги','Экспозиция','Мы на карте мира','Архив наших событий','Наши друзья','Природа','Культура','История','Гостям']
+          menu_hits = {x: [] for x in menu_terms}
+
+          for p in pages:
+              try: text = p.read_text(encoding='utf-8')
+              except UnicodeDecodeError: suspicious.append((str(p),'не UTF-8')); continue
+              for term in menu_terms:
+                  if term in text: menu_hits[term].append(str(p))
+              for href in re.findall(r'''(?:href|src)\s*=\s*["']([^"']+)["']''', text, re.I):
+                  if href.startswith(('http://','https://','mailto:','javascript:','#')):
+                      if 'wystynez.ru' in href: external.append((str(p),href))
+                      continue
+                  target = href.split('#',1)[0].split('?',1)[0]
+                  if not target or target.endswith('/') or target.startswith('data:'): continue
+                  target_path = (p.parent / target).as_posix().lstrip('./')
+                  if target_path not in local_files and not target_path.startswith('sc-pro/') and not target_path.startswith('sc-pic/'):
+                      # tolerate URL-encoded and case-sensitive legacy references for manual review
+                      missing.append((str(p),href))
+
+          lines = ['# Автоматический аудит архива SiteCraft','',f'HTML-страниц: **{len(pages)}**','']
+          lines += ['## Общие пункты меню','']
+          for term, files in menu_hits.items():
+              lines.append(f'- **{term}** — {len(files)} страниц')
+          lines += ['', '## Старые абсолютные ссылки', '']
+          lines += [f'- `{p}` → `{u}`' for p,u in external[:200]] or ['- Не обнаружены']
+          lines += ['', '## Подозрительные файлы', '']
+          lines += [f'- `{p}` — {r}' for p,r in suspicious[:200]] or ['- Не обнаружены']
+          lines += ['', '## Возможные отсутствующие локальные ссылки', '']
+          lines += [f'- `{p}` → `{u}`' for p,u in missing[:300]] or ['- Не обнаружены']
+          Path('SITE-AUDIT.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
+          print('\n'.join(lines))
+          PY
+
+      - name: Keep legacy SiteCraft files untouched by Jekyll
         run: touch .nojekyll
 
-      - name: Commit restored site
+      - name: Commit safe repairs and audit
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
@@ -90,6 +115,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No changes to commit.'
           else
-            git commit -m '[site-restore] Restore SiteCraft site'
+            git commit -m '[site-restore] Audit and portability repairs'
             git push
           fi
