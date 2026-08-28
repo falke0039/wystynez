@@ -1,9 +1,8 @@
-# Автоматический аудит архива SiteCraft
+# Аудит восстановленного SiteCraft-архива
 
 HTML-страниц: **130**
 
-## Общие пункты меню
-
+## Пункты общего меню
 - **О нас** — 2 страниц
 - **Наши услуги** — 2 страниц
 - **Экспозиция** — 9 страниц
@@ -16,7 +15,6 @@ HTML-страниц: **130**
 - **Гостям** — 4 страниц
 
 ## Старые абсолютные ссылки
-
 - `Fotovystavka.htm` → `http://www.rominten.wystynez.ru/`
 - `Prazdnik--SOSEDI----2018.htm` → `http://www.rominten.wystynez.ru/`
 - `aMy---eto--sotrudniki--Kaliningradskogo--regional_nogo--obcshestvennogo--uchrezhdenija--Vishtyneckij.htm` → `http://www.rominten.wystynez.ru/`
@@ -119,20 +117,31 @@ HTML-страниц: **130**
 - `p98.htm` → `http://www.rominten.wystynez.ru/`
 - `p99.htm` → `http://www.rominten.wystynez.ru/`
 
-## Подозрительные файлы
-
+## Проблемы кодировки
 - Не обнаружены
 
 ## Возможные отсутствующие локальные ссылки
-
-- `aMy---eto--sotrudniki--Kaliningradskogo--regional_nogo--obcshestvennogo--uchrezhdenija--Vishtyneckij.htm` → `//yandex.st/share/share.js`
-- `p0093.htm` → `//yandex.st/share/share.js`
-- `p100.htm` → `//yandex.st/share/share.js`
-- `p101.htm` → `//yandex.st/share/share.js`
-- `p33.htm` → `//yandex.st/share/share.js`
-- `p39.htm` → `//yandex.st/share/share.js`
-- `p40.htm` → `//yandex.st/share/share.js`
-- `p92.htm` → `//yandex.st/share/share.js`
-- `p96.htm` → `//yandex.st/share/share.js`
-- `p98.htm` → `//yandex.st/share/share.js`
-- `p99.htm` → `//yandex.st/share/share.js`
+- `aMy---eto--sotrudniki--Kaliningradskogo--regional_nogo--obcshestvennogo--uchrezhdenija--Vishtyneckij.htm` → `sc-pic/i0226.jpg`
+- `p10.htm` → `sc-pic/i0061.png`
+- `p10.htm` → `sc-pic/i1183.png`
+- `p10.htm` → `sc-pic/i0057.jpg`
+- `p10.htm` → `sc-pic/i0092.png`
+- `p10.htm` → `sc-pic/i0099.png`
+- `p101.htm` → `sc-pic/i1358.jpg`
+- `p101.htm` → `sc-pic/i1510.jpg`
+- `p101.htm` → `sc-pic/i1511.jpg`
+- `p15.htm` → `sc-pic/i0125.jpg`
+- `p15.htm` → `sc-pic/i0126.jpg`
+- `p15.htm` → `sc-pic/i0127.jpg`
+- `p15.htm` → `sc-pic/i0128.jpg`
+- `p15.htm` → `sc-pic/i0129.jpg`
+- `p15.htm` → `sc-pic/i0130.jpg`
+- `p15.htm` → `sc-pic/i0131.jpg`
+- `p15.htm` → `sc-pic/i0132.jpg`
+- `p15.htm` → `sc-pic/i0133.jpg`
+- `p15.htm` → `sc-pic/i0134.jpg`
+- `p28.htm` → `sc-pic/i0252.png`
+- `p40.htm` → `sc-pic/i0988.jpg`
+- `p40.htm` → `sc-pic/i0989.jpg`
+- `p95.htm` → `sc-pic/i1469.jpg`
+- `p95.htm` → `sc-pic/i1480.jpg`
