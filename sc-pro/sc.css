@@ -13,7 +13,8 @@ tr { vertical-align: top; }
 td { padding: 0px; vertical-align: top; }
 table { padding: 0px; }
 
-.t1{ font: 43px "Arial"; line-height: 49px; color:#000000; }
+/* В оригинальном архиве размер t1 был повреждён: 43px вместо нормального размера меню. */
+.t1{ font: 13px "Arial"; line-height: 15px; color:#000000; }
 .p1{ text-align:center; }
 .t2{ font: 19px "Times New Roman"; line-height: 21px; color:#000000; }
 .p2{ text-align:left; }
