@@ -7,12 +7,142 @@ HTML-страниц: **130**
 - **Наши услуги** — 2 страниц
 - **Экспозиция** — 9 страниц
 - **Мы на карте мира** — 1 страниц
-- **Архив наших событий** — 1 страниц
+- **Архив наших событий** — 2 страниц
 - **Наши друзья** — 1 страниц
 - **Природа** — 12 страниц
 - **Культура** — 9 страниц
 - **История** — 11 страниц
 - **Гостям** — 4 страниц
+
+## Проблемы кодировки и HTML
+- `Fotovystavka.htm` — незакрытый charset
+- `Prazdnik--SOSEDI----2018.htm` — незакрытый charset
+- `aMy---eto--sotrudniki--Kaliningradskogo--regional_nogo--obcshestvennogo--uchrezhdenija--Vishtyneckij.htm` — незакрытый charset
+- `index.htm` — незакрытый charset
+- `p0008.htm` — незакрытый charset
+- `p0084.htm` — незакрытый charset
+- `p0085.htm` — незакрытый charset
+- `p0086.htm` — незакрытый charset
+- `p0087.htm` — незакрытый charset
+- `p0088.htm` — незакрытый charset
+- `p0089.htm` — незакрытый charset
+- `p0090.htm` — незакрытый charset
+- `p0091.htm` — незакрытый charset
+- `p0092.htm` — незакрытый charset
+- `p0093.htm` — незакрытый charset
+- `p0094.htm` — незакрытый charset
+- `p0095.htm` — незакрытый charset
+- `p0096.htm` — незакрытый charset
+- `p0097.htm` — незакрытый charset
+- `p0098.htm` — незакрытый charset
+- `p0099.htm` — незакрытый charset
+- `p0100.htm` — незакрытый charset
+- `p0102.htm` — незакрытый charset
+- `p0103.htm` — незакрытый charset
+- `p0104.htm` — незакрытый charset
+- `p0106.htm` — незакрытый charset
+- `p0107.htm` — незакрытый charset
+- `p0108.htm` — незакрытый charset
+- `p0109.htm` — незакрытый charset
+- `p0110.htm` — незакрытый charset
+- `p0111.htm` — незакрытый charset
+- `p0112.htm` — незакрытый charset
+- `p0113.htm` — незакрытый charset
+- `p0114.htm` — незакрытый charset
+- `p0115.htm` — незакрытый charset
+- `p0116.htm` — незакрытый charset
+- `p0117.htm` — незакрытый charset
+- `p0118.htm` — незакрытый charset
+- `p0119.htm` — незакрытый charset
+- `p0120.htm` — незакрытый charset
+- `p0121.htm` — незакрытый charset
+- `p0122.htm` — незакрытый charset
+- `p0123.htm` — незакрытый charset
+- `p0124.htm` — незакрытый charset
+- `p0125.htm` — незакрытый charset
+- `p0126.htm` — незакрытый charset
+- `p0130.htm` — незакрытый charset
+- `p0131.htm` — незакрытый charset
+- `p10.htm` — незакрытый charset
+- `p100.htm` — незакрытый charset
+- `p101.htm` — незакрытый charset
+- `p102.htm` — незакрытый charset
+- `p103.htm` — незакрытый charset
+- `p104.htm` — незакрытый charset
+- `p11.htm` — незакрытый charset
+- `p12.htm` — незакрытый charset
+- `p15.htm` — незакрытый charset
+- `p16.htm` — незакрытый charset
+- `p21.htm` — незакрытый charset
+- `p22.htm` — незакрытый charset
+- `p23.htm` — незакрытый charset
+- `p24.htm` — незакрытый charset
+- `p25.htm` — незакрытый charset
+- `p27.htm` — незакрытый charset
+- `p28.htm` — незакрытый charset
+- `p29.htm` — незакрытый charset
+- `p30.htm` — незакрытый charset
+- `p31.htm` — незакрытый charset
+- `p32.htm` — незакрытый charset
+- `p33.htm` — незакрытый charset
+- `p34.htm` — незакрытый charset
+- `p35.htm` — незакрытый charset
+- `p36.htm` — незакрытый charset
+- `p38.htm` — незакрытый charset
+- `p39.htm` — незакрытый charset
+- `p40.htm` — незакрытый charset
+- `p41.htm` — незакрытый charset
+- `p42.htm` — незакрытый charset
+- `p43.htm` — незакрытый charset
+- `p44.htm` — незакрытый charset
+- `p45.htm` — незакрытый charset
+- `p46.htm` — незакрытый charset
+- `p47.htm` — незакрытый charset
+- `p48.htm` — незакрытый charset
+- `p49.htm` — незакрытый charset
+- `p50.htm` — незакрытый charset
+- `p51.htm` — незакрытый charset
+- `p53.htm` — незакрытый charset
+- `p54.htm` — незакрытый charset
+- `p55.htm` — незакрытый charset
+- `p56.htm` — незакрытый charset
+- `p57.htm` — незакрытый charset
+- `p58.htm` — незакрытый charset
+- `p59.htm` — незакрытый charset
+- `p61.htm` — незакрытый charset
+- `p68.htm` — незакрытый charset
+- `p69.htm` — незакрытый charset
+- `p70.htm` — незакрытый charset
+- `p71.htm` — незакрытый charset
+- `p72.htm` — незакрытый charset
+- `p73.htm` — незакрытый charset
+- `p74.htm` — незакрытый charset
+- `p75.htm` — незакрытый charset
+- `p76.htm` — незакрытый charset
+- `p77.htm` — незакрытый charset
+- `p78.htm` — незакрытый charset
+- `p79.htm` — незакрытый charset
+- `p8.htm` — незакрытый charset
+- `p80.htm` — незакрытый charset
+- `p81.htm` — незакрытый charset
+- `p82.htm` — незакрытый charset
+- `p83.htm` — незакрытый charset
+- `p84.htm` — незакрытый charset
+- `p85.htm` — незакрытый charset
+- `p86.htm` — незакрытый charset
+- `p87.htm` — незакрытый charset
+- `p88.htm` — незакрытый charset
+- `p89.htm` — незакрытый charset
+- `p9.htm` — незакрытый charset
+- `p90.htm` — незакрытый charset
+- `p91.htm` — незакрытый charset
+- `p92.htm` — незакрытый charset
+- `p94.htm` — незакрытый charset
+- `p95.htm` — незакрытый charset
+- `p96.htm` — незакрытый charset
+- `p97.htm` — незакрытый charset
+- `p98.htm` — незакрытый charset
+- `p99.htm` — незакрытый charset
 
 ## Старые абсолютные ссылки
 - `Fotovystavka.htm` → `http://www.rominten.wystynez.ru/`
@@ -116,9 +246,6 @@ HTML-страниц: **130**
 - `p97.htm` → `http://www.rominten.wystynez.ru/`
 - `p98.htm` → `http://www.rominten.wystynez.ru/`
 - `p99.htm` → `http://www.rominten.wystynez.ru/`
-
-## Проблемы кодировки
-- Не обнаружены
 
 ## Возможные отсутствующие локальные ссылки
 - `aMy---eto--sotrudniki--Kaliningradskogo--regional_nogo--obcshestvennogo--uchrezhdenija--Vishtyneckij.htm` → `sc-pic/i0226.jpg`
