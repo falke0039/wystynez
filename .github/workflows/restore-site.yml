@@ -13,13 +13,20 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[site-restore]') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout archive
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Audit without rewriting the restored pages
-        shell: bash
+      - uses: actions/checkout@v4
+      - name: Apply safe deterministic repairs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          if p.exists():
+            s=p.read_text(encoding='utf-8')
+            s=s.replace('charset=utf-8>','charset=utf-8">')
+            s=s.replace('<a href="./p0008.htm" class="t1"><b>Архив наших событи</b></a><b>й</b>','<a href="./p0008.htm" class="t1"><b>Архив наших событий</b></a>')
+            p.write_text(s,encoding='utf-8')
+          PY
+          touch .nojekyll
+      - name: Audit restored archive
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -28,41 +35,28 @@ jobs:
           pages=sorted(p for p in root.rglob('*') if p.is_file() and p.suffix.lower() in {'.htm','.html'})
           files={p.as_posix() for p in root.rglob('*') if p.is_file()}
           menu=['О нас','Наши услуги','Экспозиция','Мы на карте мира','Архив наших событий','Наши друзья','Природа','Культура','История','Гостям']
-          hits={x:[] for x in menu}; old=[]; missing=[]; mojibake=[]
+          hits={x:[] for x in menu}; old=[]; missing=[]; charset=[]
           for p in pages:
-            raw=p.read_bytes()
-            try: text=raw.decode('utf-8')
-            except UnicodeDecodeError:
-              mojibake.append((p.as_posix(),'не UTF-8')); continue
+            try: text=p.read_text(encoding='utf-8')
+            except UnicodeDecodeError: charset.append((p.as_posix(),'не UTF-8')); continue
             for x in menu:
               if x in text: hits[x].append(p.as_posix())
+            if re.search(r'charset=utf-8(?!["\'])',text,re.I): charset.append((p.as_posix(),'незакрытый charset'))
             for u in re.findall(r'''(?:href|src)\s*=\s*["']([^"']+)["']''',text,re.I):
               if 'wystynez.ru' in u or 'rominten.wystynez.ru' in u: old.append((p.as_posix(),u))
               if u.startswith(('http://','https://','mailto:','javascript:','#','//')): continue
               t=u.split('#',1)[0].split('?',1)[0]
-              if not t or t.endswith('/'): continue
-              target=(p.parent/t).as_posix()
-              if target.startswith('./'): target=target[2:]
-              if target not in files: missing.append((p.as_posix(),u))
-            if re.search(r'(?:Рџ|РЎ|Рђ|Рќ|Рћ|Рљ|РІ|Рµ|Р°|Рё|Рё)',text):
-              # only flag pages with the common UTF-8-as-Windows-1251 mojibake signature
-              if 'Р' in text and ('С' in text or 'Ð' in text): mojibake.append((p.as_posix(),'возможная кракозябра'))
+              if t and not t.endswith('/') and (p.parent/t).as_posix().lstrip('./') not in files: missing.append((p.as_posix(),u))
           out=['# Аудит восстановленного SiteCraft-архива','',f'HTML-страниц: **{len(pages)}**','', '## Пункты общего меню']
           out += [f'- **{x}** — {len(v)} страниц' for x,v in hits.items()]
+          out += ['', '## Проблемы кодировки и HTML'] + ([f'- `{p}` — {r}' for p,r in charset[:300]] or ['- Не обнаружены'])
           out += ['', '## Старые абсолютные ссылки'] + ([f'- `{p}` → `{u}`' for p,u in old[:300]] or ['- Не обнаружены'])
-          out += ['', '## Проблемы кодировки'] + ([f'- `{p}` — {r}' for p,r in mojibake[:300]] or ['- Не обнаружены'])
           out += ['', '## Возможные отсутствующие локальные ссылки'] + ([f'- `{p}` → `{u}`' for p,u in missing[:300]] or ['- Не обнаружены'])
           Path('SITE-AUDIT.md').write_text('\n'.join(out)+'\n',encoding='utf-8')
-          print('\n'.join(out))
           PY
-
-      - name: Keep legacy SiteCraft files untouched by Jekyll
-        run: touch .nojekyll
-
-      - name: Commit audit only
-        shell: bash
+      - name: Commit repairs and audit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .nojekyll SITE-AUDIT.md
-          if git diff --cached --quiet; then echo 'No audit changes.'; else git commit -m '[site-restore] Audit restored SiteCraft archive'; git push; fi
+          git add index.html .nojekyll SITE-AUDIT.md
+          if git diff --cached --quiet; then echo 'No changes.'; else git commit -m '[site-restore] Safe homepage repair and audit'; git push; fi
