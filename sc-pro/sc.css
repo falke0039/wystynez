@@ -18,3 +18,5 @@ table { padding: 0px; }
 .p1{ text-align:center; }
 .t2{ font: 19px "Times New Roman"; line-height: 21px; color:#000000; }
 .p2{ text-align:left; }
+/* Восстановление верхнего меню старых страниц: ссылки используют класс t13. */
+.t13{font:13px Arial,Helvetica,sans-serif;line-height:15px;color:#000000;}
