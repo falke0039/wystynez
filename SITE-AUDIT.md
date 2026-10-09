@@ -90,7 +90,6 @@ HTML-страниц: **130**
 - `p36.htm` — незакрытый charset
 - `p38.htm` — незакрытый charset
 - `p39.htm` — незакрытый charset
-- `p40.htm` — незакрытый charset
 - `p41.htm` — незакрытый charset
 - `p42.htm` — незакрытый charset
 - `p43.htm` — незакрытый charset
