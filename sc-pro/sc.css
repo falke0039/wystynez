@@ -20,3 +20,14 @@ table { padding: 0px; }
 .p2{ text-align:left; }
 /* Восстановление верхнего меню старых страниц: ссылки используют класс t13. */
 .t13{font:13px Arial,Helvetica,sans-serif;line-height:15px;color:#000000;}
+
+/* Fallback typography for Sitecraft-generated classes missing from this archive.
+   Keep the original fixed layout and preserve the few explicit legacy styles above. */
+[class*=" t"], [class^="t"] { font-family: Arial, Helvetica, sans-serif; }
+.t99, .t100, .t101 { font-size: 15px; line-height: 18px; }
+.t34 { font-size: 17px; line-height: 1.35; }
+.t316 { font-size: 22px; line-height: 1.2; }
+.t320 { font-size: 29px; line-height: 1.2; }
+.t255, .t281, .t321, .t361, .t362, .t564, .t565 { font-size: 16px; line-height: 1.2; }
+/* Explicit link colors in cards, even when original Sitecraft rules are missing. */
+a[class^="t"], a[class*=" t"] { color: #172b59; }
